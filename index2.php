@@ -1,8 +1,8 @@
-
 <?php
-//session_start();
-$item_list = filter_input(INPUT_POST, 'itemlist', FILTER_DEFAULT,
-    FILTER_REQUIRE_ARRAY);
+//Index.php ... Description...
+//get itemlist array from POST
+$item_list = filter_input(INPUT_POST, 'itemlist',
+        FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
 if ($item_list === NULL) {
     $item_list = array();
 }
@@ -13,58 +13,99 @@ $action = filter_input(INPUT_POST, 'action');
 //initialize error messages array
 $errors = array();
 
-//process
 
+//process
 switch( $action ) {
-    case 'add':
-        $new_item = filter_input(INPUT_POST, 'item');
+    case 'Add Item':
+        $new_item = filter_input(INPUT_POST, 'newitem');
         if (empty($new_item)) {
-            $errors[] = 'The new task cannot be empty.';
+            $errors[] = 'The new list cannot be empty.';
         } else {
-            $item_list[] = $new_item;
+
+            array_push($item_list, $new_item);
         }
         break;
-    case 'delete':
+    case 'Delete Item':
         $item_index = filter_input(INPUT_POST, 'itemid', FILTER_VALIDATE_INT);
         if ($item_index === NULL || $item_index === FALSE) {
-            if( !isset($_POST['sort'])) {
-                $errors[] = 'The task cannot be deleted.';
-            }
+            $errors[] = 'The item cannot be deleted.';
         } else {
             unset($item_list[$item_index]);
             $item_list = array_values($item_list);
-
         }
-    case 'modify':
-
-
         break;
+
+    case 'Modify Item':
+      $item_index = filter_input(INPUT_POST,'itemid', FILTER_VALIDATE_INT);
+
+      if ($item_index === NULL || $item_index === FALSE) {
+        $errors[] = 'The item cannot be modified.';
+      } else {
+        $item_to_modify = $item_list[$item_index];
+      }
+
+      break;
+
+      case 'Save Changes':
+
+      $i = filter_input(INPUT_POST, 'modifieditemid', FILTER_VALIDATE_INT);
+
+      $modified_item = filter_input(INPUT_POST, 'modifieditem');
+
+      if (empty($modified_item)) {
+
+      $errors[] = 'The modified item  cannot be empty.';
+
+      } elseif($i === NULL || $i === FALSE) {
+
+      $errors[] = 'The item cannot be modified.';
+
+      } else {
+
+      $item_list[$i] = $modified_item;
+
+      $modified_item = '';
+
+      }
+
+      break;
+
+      case 'Cancel Changes':
+
+      $modified_task = '';
+
+      break;
+
+
+    case 'Promote Item':
+
+    $item_index = filter_input(INPUT_POST, 'itemid', FILTER_VALIDATE_INT);
+
+  if ($item_index === NULL || $item_index === FALSE) {
+
+    $errors[] = 'The item cannot be promoted.';
+
+  } elseif ($item_index == 0) {
+
+    $errors[] = 'You can\'t promote the first item.';
+
+  }
+  else {
+
+  // get the values for the two indexes
+
+    $item_value = $item_list[$item_index];
+    $prior_item_value = $item_list[$item_index-1];
+    // swap the values
+    $item_list[$item_index-1] = $item_value;
+    $item_list[$item_index] = $prior_item_value;
+  }
+    break;
+
+    case 'Sort Items':
+
+  break;
 }
+
+include('item_list.php');
 ?>
-
-
-
-
-
-<?php
-
-    require 'include/database.php';
-    if(isset($_POST['submit'])){
-
-        //Add database connection
-        require 'include/database.php';
-        $sItem = $_POST['item'];
-
-        if(!empty($_POST['item'])){
-            $sItem = $_POST['item'];
-            $query= "insert into shoplist(itemName) values('$sItem')";
-            $run = mysqli_query($conn,$query) or die(mysqli_error());
-        }else{
-           echo '<script type= "text/javascript"> alert("No recorde") "location:"index.php?error=sqlerror" </script>';
-            header("location:index.php?error=sqlerror");
-
-
-        }
-
-}
-include('index-inc.php');
